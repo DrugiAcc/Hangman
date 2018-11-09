@@ -130,7 +130,7 @@ def check_answer(text, start=None, stop=None, condition=None):  # CHECKING IF US
 if __name__ == '__main__':
 
     # OPENING A LIST OF ALL WORDS
-    with open('C:\Programs\PyCharm\Projects\My Projects\Finished Programs\SubFiles\Words.txt') as f:
+    with open('Words.txt') as f:
         data = [x.lower() for x in list(f)]
 
     print("\nWelcome to Hangman!\n")
