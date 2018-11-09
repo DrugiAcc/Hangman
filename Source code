@@ -1,0 +1,151 @@
+import random
+
+
+class Hangman:
+
+    def __init__(self, words):
+        self.words = words
+
+    def hangman1(self):
+
+        # RULES
+        print("\nTo win the game you must guess a random word by entering letters!\n"
+              "If you think you know what the word is, just enter it. Good luck!")
+
+        # CHOOSING A RANDOM WORD
+        word = random.choice(self.words).strip().upper()
+
+        # MAKING A DISPLAY FOR A USER
+        user_lines = [x for x in ("_" * len(word))]
+        user_guess, attempt = None, 1
+
+        # UPDATING THE DISPLAY UNTIL THE USER GUESSES THE WORD
+        while not (user_guess == word or "".join(user_lines) == word):
+            user_guess = str(input("\nGuess {}: ".format(attempt)).upper())
+            for y, x in enumerate(word):
+                if x == user_guess:
+                    user_lines[y] = x
+            attempt += 1
+            print("         >   ", "  ".join(user_lines))
+
+        # RETURNING FINAL RESULT
+        return "\nWell done! It took you {} attempts to guess the word.".format(attempt-1)
+
+    def hangman2(self):
+
+        # MAKING A FUNCTION TO FIND FIRST AVAILABLE VOWELS
+        def vocals():
+            for x in letters:
+                if x in "aeiou":
+                    for y in search:
+                        for z in y:
+                            if z in "aeiou" and z in letters:
+                                return z
+
+            # RETURNING A RANDOM LETTER IF WE CAN'T FIND ANY VOWELS
+            if len(search) != 0:
+                for x in random.choice(search):
+                    if x in letters:
+                        return x
+            return None
+
+        # RULES
+        print("\nThink of a word and guide the computer until it guesses the word. Have fun!")
+
+        # SAVING WORDS THAT MATCH USER'S WORD LENGTH
+        word = check_answer("\n> What is the length of your word? ", 3, 16)
+        search = [x.strip() for x in self.words if len(x) == word + 1]
+
+        # DISPLAYING LINES FOR USER
+        pc_lines, places = [x for x in ("_" * word)], []
+        letters = [x for x in "abcdefghijklmnopqrstuvwxyz"]
+        print("\n         >   ", "  ".join(pc_lines))
+
+        # GUESSING THE WORD UNTIL THERE'S ONLY ONE WORD REMAINING IN OUR WORDS FILE
+        while len(search) != 1:
+            letter = vocals()
+            if letter is None:
+                return "\nSorry, but your word does not exist or is not in the dictionary."
+            letters.remove(letter)
+            place = check_answer("\n> Is there a letter {} in the word? "
+                                 "index(es)/n: ".format(letter.capitalize()), 0, word, places)
+            places += place
+
+            # REMOVING ALL WORDS THAT DON'T MATCH USER'S CONDITIONS
+            if place == "n":
+                search = [x for x in search if letter not in x]
+                continue
+            search = [x for x in search if all(x[y] == letter for y in place)]
+
+            # UPDATING THE DISPLAY
+            for x in place:
+                pc_lines[x] = letter.capitalize()
+            print("\n         >   ", "  ".join(pc_lines))
+
+        # RETURNING FINAL RESULT
+        return "\nYour word is {}! GG.".format(search[0])
+
+
+def check_answer(text, start=None, stop=None, condition=None):  # CHECKING IF USER ANSWER IS VALID
+    if condition is None or isinstance(condition, list):
+        while True:
+            if isinstance(condition, list):
+                answer = input(text)
+                if answer == "n":
+                    return "n"
+                else:
+                    try:
+                        answer = [int(x) - 1 for x in answer.split()]
+                    except ValueError:
+                        print("Sorry, but you must separate numbers with space.")
+                        continue
+                    for x in answer:
+                        if x in condition or len(answer) != len(set(answer)):
+                            print("Sorry, but you mustn't repeat numbers.")
+                            break
+                        if not start <= x < stop:
+                            print("Sorry, but your number(s) is/are either too large or too small. Try again.")
+                            break
+                    else:
+                        break
+                    continue
+            try:
+                answer = int(input(text))
+                if answer not in range(start, stop):
+                    print("Sorry, but your number(s) must be in range from {} to {}.".format(start, stop - 1))
+                    continue
+                break
+            except ValueError:
+                print("Sorry, but you need to enter number(s)."),
+    else:
+        while True:
+            answer = str(input(text))
+            if answer not in condition:
+                print("Sorry, but you need to answer with {} or {}.".format(condition[0], condition[1]))
+                continue
+            break
+    return answer
+
+
+if __name__ == '__main__':
+
+    # OPENING A LIST OF ALL WORDS
+    with open('C:\Programs\PyCharm\Projects\My Projects\Finished Programs\SubFiles\Words.txt') as f:
+        data = [x.lower() for x in list(f)]
+
+    print("\nWelcome to Hangman!\n")
+    playing = True
+
+    while playing:
+        print("\nPlease choose one of the options below. \n"
+              "\n1. Let me guess a random word.\n2. Let computer guess my word.")
+
+        # CALLING FOR A CHOSEN OPTION AND PRINTING RESULTS
+        if check_answer("\n> Enter here: ", 1, 3) == 1:
+            print(Hangman(data).hangman1())
+        else:
+            print(Hangman(data).hangman2())
+
+        # PLAY AGAIN?
+        if check_answer("\nWould you like to play again? y/n: ", condition="yn") == "n":
+            playing = False
